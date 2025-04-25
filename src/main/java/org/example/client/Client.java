@@ -72,8 +72,6 @@ public class Client implements ClientListener {
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-
-
         });
         thread.start();
     }
