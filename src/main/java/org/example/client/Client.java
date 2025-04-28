@@ -110,6 +110,7 @@ public class Client implements ClientListener {
         sendDatagram("close");
         frame.dispose();
         thread.interrupt();
+        System.exit(0);
     }
 
     @Override
