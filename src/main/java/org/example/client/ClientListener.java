@@ -10,7 +10,6 @@ public interface ClientListener {
     void clearButtonAction();
     void closeButtonAction();
     void sendButtonAction(String name, GraphicObject object);
-    void getButtonAction(String name);
 
     List<GraphicObject> getObjectList();
 

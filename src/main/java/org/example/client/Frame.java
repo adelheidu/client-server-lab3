@@ -9,8 +9,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Collections;
@@ -29,16 +27,14 @@ public class Frame extends JFrame {
     JButton sendButton;
     JButton clearButton;
     JButton closeButton;
-    JButton getButton;
-    JTextField textField;
 
     GraphicObject selectedObject = null;
 
     private ClientListener clientListener;
 
-    public Frame(ClientListener clientListener) {
+    public Frame(ClientListener clientListener, int port) {
 
-        super("Разработка клиент-серверных приложений");
+        super("Клиент " + port);
         this.clientListener = clientListener;
         initialize();
 
@@ -64,23 +60,17 @@ public class Frame extends JFrame {
         sendButton = new JButton("Отправить");
         clearButton = new JButton("Удалить");
         closeButton = new JButton("Закрыть");
-        getButton = new JButton("Получить");
 
         buttonPanel.add(addButton);
         buttonPanel.add(sendButton);
         buttonPanel.add(clearButton);
         buttonPanel.add(closeButton);
 
-        textField = new JTextField(15);
-        buttonPanel.add(textField);
-
         onAddButtonClick();
         onSendButtonClick();
         onClearButtonClick();
         onCloseButtonClick();
-        onGetButtonClick();
         onMouseButtonClick();
-        onKeyTaped();
 
         list = new JList<>();
         listModel = new DefaultListModel<>();
@@ -89,7 +79,6 @@ public class Frame extends JFrame {
         scrollPane.setPreferredSize(new Dimension(185, 550));
 
         serverPanel.add(scrollPane, BorderLayout.NORTH);
-        serverPanel.add(getButton, BorderLayout.SOUTH);
 
 
         add(buttonPanel, BorderLayout.NORTH);
@@ -161,10 +150,10 @@ public class Frame extends JFrame {
         drawingPanel.repaint();
     }
 
-    public void updateList(List<String> objects) {
-        Collections.sort(objects);
+    public void updateList(List<String> clients) {
+        Collections.sort(clients);
         listModel.removeAllElements();
-        listModel.addAll(objects);
+        listModel.addAll(clients);
     }
 
     private void onAddButtonClick() {
@@ -180,8 +169,9 @@ public class Frame extends JFrame {
         sendButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (selectedObject != null && !textField.getText().isEmpty()) {
-                    clientListener.sendButtonAction(textField.getText(), selectedObject);
+                String name = list.getSelectedValue();
+                if (selectedObject != null && name != null) {
+                    clientListener.sendButtonAction(name, selectedObject);
                 }
             }
         });
@@ -202,27 +192,6 @@ public class Frame extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 clientListener.closeButtonAction();
-            }
-        });
-    }
-
-    private void onGetButtonClick() {
-        getButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String name = list.getSelectedValue();
-                if (name != null) {
-                    clientListener.getButtonAction(name);
-                }
-            }
-        });
-    }
-
-    private void onKeyTaped() {
-        textField.addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyTyped(KeyEvent e) {
-                if (e.getKeyChar() == '/') e.consume();
             }
         });
     }

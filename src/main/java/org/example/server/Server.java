@@ -1,6 +1,5 @@
 package org.example.server;
 
-import org.example.objects.GraphicObject;
 import org.example.objects.Serializer;
 
 import java.io.IOException;
@@ -8,9 +7,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class Server {
 
@@ -21,7 +18,6 @@ public class Server {
     private Serializer serializer;
 
     private List<Integer> clients;
-    private static final Map<String, GraphicObject> objects = new HashMap<>();
 
     public static void main(String[] args) {
         System.out.println("Server is running!");
@@ -44,17 +40,14 @@ public class Server {
 
                 if (message.equals("start")){
                     clients.add(receivePacket.getPort());
-                    notifyClients();
                     System.out.println("Active clients: " + clients);
+                    notifyClients();
                 } else if (message.equals("close")) {
                     clients.remove(Integer.valueOf(receivePacket.getPort()));
                     System.out.println("Active clients: " + clients);
-                } else if (message.startsWith("post")) {
-                    post(message);
                     notifyClients();
-                } else if (message.startsWith("get")) {
-                    String name = message.split("//")[1];
-                    sendDatagram(serializer.serializeXMLObject(objects.get(name)), receivePacket.getPort());
+                } else if (message.startsWith("send")) {
+                    send(message);
                 }
             }
 
@@ -74,17 +67,23 @@ public class Server {
         }
     }
 
-    private void post(String message) {
+    private void send(String message) {
         String[] parts = message.split("//");
-        objects.put(parts[1], serializer.deserializeXMLObject(parts[2]));
+        sendDatagram(parts[2], Integer.parseInt(parts[1]));
     }
 
     private void notifyClients() {
-        StringBuilder stringBuilder = new StringBuilder("objects//");
-        objects.keySet().forEach(key -> stringBuilder.append(key).append("//"));
-        String message = stringBuilder.toString();
-        clients.forEach(client -> sendDatagram(message, client));
+        clients.forEach(client -> {
+            StringBuilder stringBuilder = new StringBuilder("clients//");
+            clients.forEach(port ->{
+                if (client != port){
+                    stringBuilder.append(port).append("//");
+                }
+            });
+            String message = stringBuilder.toString();
+            System.out.println(message);
+            sendDatagram(message, client);
+        });
     }
-
 
 }

@@ -34,7 +34,6 @@ public class Client implements ClientListener {
     public Client() {
         objectList = new ObjectList();
         serializer = new Serializer();
-        frame = new Frame(this);
         try {
             serverAddress = InetAddress.getByName("localhost");
         } catch (UnknownHostException e) {
@@ -42,9 +41,11 @@ public class Client implements ClientListener {
         }
         try {
             socket = new DatagramSocket();
+            System.out.println(socket.getLocalPort());
         } catch (SocketException e) {
             throw new RuntimeException(e);
         }
+        frame = new Frame(this, socket.getLocalPort());
         sendDatagram("start");
         createThread();
     }
@@ -59,7 +60,7 @@ public class Client implements ClientListener {
                     String message = new String(receivePacket.getData(), 0, receivePacket.getLength());
                     System.out.println("Incoming message: " + message);
 
-                    if (message.startsWith("objects")){
+                    if (message.startsWith("clients")){
                         List<String> list = new ArrayList<>(Arrays.asList(message.split("//")));
                         list.removeFirst();
                         frame.updateList(list);
@@ -115,11 +116,7 @@ public class Client implements ClientListener {
 
     @Override
     public void sendButtonAction(String name, GraphicObject object) {
-        sendDatagram("post" + "//" + name + "//" + serializer.serializeXMLObject(object));
+        sendDatagram("send" + "//" + name + "//" + serializer.serializeXMLObject(object));
     }
 
-    @Override
-    public void getButtonAction(String name) {
-        sendDatagram("get" + "//" + name);
-    }
 }
